@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Small World</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fce4ec;
+        }
+        .dancing-script {
+            font-family: 'Dancing Script', cursive;
+        }
+        .propose-button {
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-image: linear-gradient(to right, #ff8a80 0%, #ff80ab 51%, #ff8a80 100%);
+            background-size: 200% auto;
+            color: white;
+            border: none;
+        }
+        .propose-button:hover {
+            background-position: right center;
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px);
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeInUp { animation: fadeInUp 1s ease-out forwards; }
+        .animate-fadeIn { animation: fadeInUp 1s ease-out forwards; }
+        .bg-animation {
+            background-image: radial-gradient(circle at 50% 10%, #fff0f5, #fce4ec, #ffc0cb);
+            background-size: 400% 400%;
+            animation: bg-pan 20s ease-in-out infinite;
+        }
+        @keyframes bg-pan {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+        .video-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: flex;
+        }
+        
+        .pleading-emoji {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+            z-index: 10;
+            display: none;
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-animation">
+    
+    <!-- Video Player -->
+    <div id="video-overlay" class="video-overlay">
+        <video id="gate-video" class="w-full h-full object-cover" muted playsinline>
+            <source src="./assets/enteringworld.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <!-- Audio Player for background music -->
+    <audio id="gate-audio" src="./assets/soft_ride_audio.mp3" preload="auto" loop></audio>
+
+    <div class="w-full min-h-screen flex flex-col items-center justify-center p-4 overflow-x-hidden">
+        <div class="w-full max-w-2xl bg-white bg-opacity-80 backdrop-filter backdrop-blur-sm rounded-3xl shadow-xl p-8 md:p-12 text-center flex flex-col items-center justify-center min-h-[600px] relative">
+            
+            <!-- Pleading Emoji -->
+            <div id="sad-emoji-container" class="pleading-emoji">
+                <picture>
+                    <source srcset="https://fonts.gstatic.com/s/e/notoemoji/latest/1f97a/512.webp" type="image/webp">
+                    <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f97a/512.gif" alt="🥺" class="w-full h-full object-contain">
+                </picture>
+            </div>
+
+            <!-- Pages -->
+            <div id="intro-page" class="page active flex-col items-center justify-center animate-fadeInUp">
+                <div class="text-6xl md:text-8xl mb-4">🧑‍🍼</div>
+                <h1 class="dancing-script text-5xl md:text-7xl font-bold text-pink-600 mb-4">Greetings! I am Bauraha.</h1>
+                <h2 class="dancing-script text-xl md:text-2xl mb-8 font-bold text-pink-900">
+                    Will you enter my small beautiful world?
+                </h2>
+                <div class="flex space-x-4 mt-8">
+                    <button id="yes-button" class="propose-button py-3 px-8 rounded-full font-bold text-lg hover:text-white">Yes. I will. ❤️</button>
+                    <button id="no-button" class="propose-button py-3 px-8 rounded-full font-bold text-lg bg-pink-300">No. I don't want to. 😔</button>
+                </div>
+                <p id="message-box" class="mt-4 text-pink-800 animate-fadeInUp"></p>
+            </div>
+
+            <div id="pre-video-page" class="page flex-col items-center justify-center">
+                <h2 class="dancing-script text-5xl md:text-4xl mb-8 font-bold text-pink-600">
+                    Before we go into the clouds...<br><br>
+                    Babbuu hold my hand tight and press the button<br>
+                </h2>
+                <p class="text-lg md:text-xl text-pink-700 mt-4 mb-8 dancing-script">Babbuu plug your earphones to feel this ride</p>
+                <button id="pre-video-button" class="propose-button py-3 px-8 rounded-full font-bold text-lg hover:text-white mt-8">Lets go ❤️</button>
+            </div>
+
+            <div id="the-reveal-page" class="page flex-col items-center justify-center">
+                <h1 class="dancing-script text-5xl md:text-7xl font-bold text-pink-600 mb-4">My small world is only you, Sanuu.</h1>
+                 <div class="flex items-center justify-center space-x-2 text-xl md:text-2xl mb-8">
+                    <h2 class="dancing-script text-5xl md:text-4xl mb-8 font-bold text-pink-600">Because my peace is in you.</h2>
+                    <picture>
+                        <source srcset="https://fonts.gstatic.com/s/e/notoemoji/latest/1f618/512.webp" type="image/webp">
+                        <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f618/512.gif" alt="😘" class="w-8 h-8 md:w-10 md:h-10">
+                    </picture>
+                    <picture>
+                        <source srcset="https://fonts.gstatic.com/s/e/notoemoji/latest/1f970/512.webp" type="image/webp">
+                        <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f970/512.gif" alt="🥰" class="w-8 h-8 md:w-10 md:h-10">
+                    </picture>
+                </div>
+                <button id="explore-button" class="propose-button py-3 px-8 rounded-full font-bold text-lg hover:text-white mt-8">Let's Explore 💖</button>
+            </div>
+
+            <div id="memories-page" class="page flex-col items-center justify-center">
+                <h2 class="dancing-script text-5xl font-bold text-pink-600 mb-6">Our Beautiful Memories</h2>
+                <p class="dancing-script text-5xl md:text-4xl mb-8 font-bold text-pink-600">
+                    A little look back at the moments that made us.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-lg">
+                    <div>
+                        <img src="./assets/photo2.jpg" alt="Our First Date" class="rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300"/>
+                        <p class="mt-2 text-sm text-pink-700">Babbuu, do you remember this moment?<br>You came to Mumbai to meet me.<br>This picture was clicked near Bandra Fort.</p>
+                    </div>
+                    <div>
+                        <img src="./assets/photo4.jpg" alt="That time we laughed so hard" class="rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300"/>
+                        <p class="mt-2 text-sm text-pink-700">Babbuu this was also clicked near Bandra Fort.<br>But the best part of this picture is, your Bauraha never laughed before the way he laughed when he was with you there.<br>Even there is no such picture of him apart from this one.<br>This is the only picture where your Bauraha is laughing like this.💖</p>
+                    </div>
+                    <div>
+                        <img src="./assets/photo5.jpg" alt="A special day together" class="rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300"/>
+                        <p class="mt-2 text-sm text-pink-700">You remember this place?<br>This was in Prozone Mall.<br>The story behind this picture is, your Bauraha was loving to click the pictures of his Laadli.💖<br>This was the only moment when he clicked your lots of pictures.<br>Even the camera can't capture you in the way that you are in the Bauraha's eyes.😘</p>
+                    </div>
+                    <div>
+                        <img src="./assets/photo6.jpg" alt="A special day together" class="rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300"/>
+                        <p class="mt-2 text-sm text-pink-700">This picture is just amazing.<br>This picture has a very beautiful story.<br>When you saw the Abaya, you had some tears in your eyes.<br>Just after seeing that you hugged him such a way that was never ever before. That was the very first deepest hug.💖<br>Also you kissed him on his cheeks.😘 That was so beautiful for him that he still remembers that moment.</p>
+                    </div>
+                </div>
+                <button id="flashbacks-button" class="propose-button py-3 px-8 rounded-full font-bold text-lg hover:text-white mt-12">Get some Flashbacks ✨</button>
+            </div>
+
+            <div id="flashbacks-page" class="page flex-col items-center justify-center animate-fadeIn">
+                <h2 class="dancing-script text-5xl font-bold text-pink-600 mb-6">That Moment, Forever In My Heart</h2>
+                <div class="flex flex-col lg:flex-row items-center justify-center w-full max-w-5xl space-y-8 lg:space-y-0 lg:space-x-8 text-center lg:text-left">
+                    <!-- Text Container -->
+                    <div class="flex-grow w-full lg:w-1/2 p-6 bg-pink-100 rounded-xl shadow-lg border border-pink-200">
+                        <p class="mt-2 text-sm text-pink-700">
+                            Babbuu, do you remember this moment? This was the very first time you walked towards me when I came to meet you for the first time. For me it was literally like time stood still, and the world faded away. In that moment, I knew my heart had found its home.<br>
+                            At that time I captured this moment because I always wanted to feel the moment for whole life that how you were coming toward me.
+                        </p>
+                    </div>
+                    <!-- Video Container -->
+                    <div class="flex-shrink-0 w-full lg:w-1/2 p-4 bg-pink-100 rounded-xl shadow-lg border border-pink-200">
+                        <video id="flashbacks-video" class="rounded-lg w-full video-hover-effect" autoplay muted loop controls playsinline>
+                            <source src="./assets/video4.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div id="flashbacksUnmuteButtonContainer" class="mt-4 text-center">
+                            <button id="flashbacksUnmuteButton" class="px-6 py-2 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full shadow-md transition-colors duration-200">
+                                Click to Unmute
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <button id="gifts-button" class="propose-button py-3 px-8 rounded-full font-bold text-lg hover:text-white mt-12">Our First Gift ✨</button>
+            </div>
+
+            <div id="gifts-page" class="page flex-col items-center justify-center animate-fadeIn">
+                <h2 class="dancing-script text-5xl font-bold text-pink-600 mb-6 text-center">That Precious Moment, Unwrapped</h2>
+                <div class="flex flex-col lg:flex-row items-center justify-center w-full max-w-5xl space-y-8 lg:space-y-0 lg:space-x-8 text-center lg:text-left">
+                    <!-- Text Container -->
+                    <div class="flex-grow w-full lg:w-1/2 p-6 bg-pink-100 rounded-xl shadow-lg border border-pink-200">
+                        <p class="mt-2 text-sm text-pink-700">
+                            Babbuu, this was the first gift I ever gave you, the one with the bracelet and earrings. You were unwrapping it so carefully, and I just couldn't take my eyes off you. I wanted to capture that moment forever, to see that smile on your face whenever I miss you.
+                        </p>
+                        <div id="question-container">
+                            <p class="mt-8 mb-4 font-semibold text-pink-700 text-lg">Babbuu, do you still have that bracelet and earrings?</p>
+                            <div class="flex space-x-4 justify-center">
+                                <button id="gifts-yes-button" class="py-2 px-6 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full shadow-md transition-colors duration-200">Yes, I have them</button>
+                                <button id="gifts-no-button" class="py-2 px-6 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full shadow-md transition-colors duration-200">No, I have lost them</button>
+                            </div>
+                        </div>
+                        <div id="emoji-container" class="hidden text-center mt-6">
+                            <span id="emoji-display" class="text-6xl animate-pulse"></span>
+                        </div>
+                    </div>
+                    <!-- Video Container -->
+                    <div class="flex-shrink-0 w-full lg:w-1/2 p-4 bg-pink-100 rounded-xl shadow-lg border border-pink-200">
+                        <video id="gifts-video" class="rounded-lg w-full video-hover-effect" autoplay muted loop controls playsinline>
+                            <source src="./assets/video1.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div id="giftsUnmuteButtonContainer" class="mt-4 text-center">
+                            <button id="giftsUnmuteButton" class="px-6 py-2 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full shadow-md transition-colors duration-200">
+                                Click to Unmute
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Updated button to navigate to the new page -->
+                <button id="hammer-game-button" class="propose-button py-3 px-8 rounded-full font-bold text-lg hover:text-white mt-12">That Funny Moment 🤣</button>
+            </div>
+
+            <!-- New Page for the hammer game story -->
+            <div id="hammer-game-page" class="page flex-col items-center justify-center animate-fadeIn">
+                <h2 class="dancing-script text-5xl font-bold text-pink-600 mb-6 text-center">A Precious, Unwrapped Moment</h2>
+                <div class="flex flex-col lg:flex-row items-center justify-center w-full max-w-5xl space-y-8 lg:space-y-0 lg:space-x-8 text-center lg:text-left">
+                    <!-- Text Container -->
+                    <div class="flex-grow w-full lg:w-1/2 p-6 bg-pink-100 rounded-xl shadow-lg border border-pink-200">
+                        <p class="mt-2 text-sm text-pink-700">
+                            Babbuu, do you remember that time we were in the games section of the mall? I was so excited to record you on the hammer game. You were about to hammer, all focused, when a random child suddenly came out of nowhere and pressed the button with his hands!
+                        </p>
+                        <p class="mt-2 text-sm text-pink-700">
+                            The look of disappointment on your face was so funny, and so adorable. We both thought we had lost our chance, but fortunately, the game gave us a second try. Even though you had a second chance, you weren't able to hammer with the same excitement you had at first.
+                        </p>
+                        <p class="mt-2 text-sm text-pink-700">
+                            It's one of those little moments that makes me smile just thinking about it.
+                        </p>
+                    </div>
+                    <!-- Video Container -->
+                    <div class="flex-shrink-0 w-full lg:w-1/2 p-4 bg-pink-100 rounded-xl shadow-lg border border-pink-200">
+                        <video id="hammer-game-video" class="rounded-lg w-full video-hover-effect" autoplay muted loop controls playsinline>
+                            <!-- Replace this placeholder source with your video URL -->
+                            <source src="./assets/video2.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div id="hammerGameUnmuteButtonContainer" class="mt-4 text-center">
+                            <button id="hammerGameUnmuteButton" class="px-6 py-2 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full shadow-md transition-colors duration-200">
+                                Click to Unmute
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Updated button to navigate to the new page -->
+                <button id="unwrapped-moment-button" class="propose-button py-3 px-8 rounded-full font-bold text-lg hover:text-white mt-12">A Precious, Unwrapped Moment ❤️</button>
+            </div>
+
+            <!-- New Page for the "A Precious, Unwrapped Moment" story -->
+            <div id="unwrapped-moment-page" class="page flex-col items-center justify-center animate-fadeIn">
+                <h2 class="dancing-script text-5xl font-bold text-pink-600 mb-6 text-center">A Precious, Unwrapped Moment</h2>
+                <div class="flex flex-col lg:flex-row items-center justify-center w-full max-w-5xl space-y-8 lg:space-y-0 lg:space-x-8 text-center lg:text-left">
+                    <!-- Video Container -->
+                    <div class="flex-shrink-0 w-full lg:w-1/2 p-4 bg-pink-100 rounded-xl shadow-lg border border-pink-200">
+                        <video id="unwrapped-moment-video" class="rounded-lg w-full video-hover-effect" autoplay muted loop controls playsinline>
+                            <source src="./assets/video5.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div id="unwrappedUnmuteButtonContainer" class="mt-4 text-center">
+                            <button id="unwrappedUnmuteButton" class="px-6 py-2 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-full shadow-md transition-colors duration-200">
+                                Click to Unmute
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Text Container -->
+                    <div class="flex-grow w-full lg:w-1/2 p-6 bg-pink-100 rounded-xl shadow-lg border border-pink-200">
+                        <p class="mt-2 text-sm text-pink-700">
+                            Babbuu, do you remember that video I have of you in the books section of the crossword? It’s one of my favorites, maybe even the most precious one. You were just roaming around, looking at things, and I was filming you like I do, and then you looked at me. The way you smiled and tilted your head sideways in that moment... it just completely flattened me. I was so incredibly in love with you right then. It was one of the cutest things I've ever seen.
+                        </p>
+                        <p class="mt-2 text-sm text-pink-700">
+                            I want you to know something about all the videos and pictures I take of you. I truly feel that no one else could ever film these moments. It's not the camera that captures them; it’s the person behind the camera. It’s the person who knows you so well, who sees you as the most beautiful girl in the world, and who knows exactly when to film you to capture your essence.
+                        </p>
+                        <p class="mt-2 text-sm text-pink-700">
+                            You are the pearl of my eyes. No one can see you the way I do, because I don't just see you with my eyes—I feel you with my heart and soul.
+                        </p>
+                    </div>
+                </div>
+                <!-- <button id="future-button" class="propose-button py-3 px-8 rounded-full font-bold text-lg hover:text-white mt-12">See our Future ✨</button>
+            </div>
+
+            <div id="future-page" class="page flex-col items-center justify-center">
+                <h2 class="dancing-script text-5xl font-bold text-pink-600 mb-6">Our Future, Our Dreams</h2>
+                <p class="text-xl md:text-2xl mb-8 text-pink-800">
+                    A look into the beautiful life we'll build together.
+                </p>
+                <div class="flex flex-col md:flex-row items-center md:space-x-8 space-y-8 md:space-y-0 w-full max-w-2xl">
+                    <img src="https://placehold.co/300x200/ff92b4/FFFFFF?text=Our+Future+Home" alt="Future Home" class="rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 w-full md:w-1/2"/>
+                    <img src="https://placehold.co/300x200/ff92b4/FFFFFF?text=Aafiya+Calling" alt="Aafiya Calling" class="rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300 w-full md:w-1/2"/>
+                </div>
+                <p class="mt-8 text-lg md:text-xl text-pink-700 max-w-xl">
+                    "A home full of warmth, laughter, and our little princess Aafiya.
+                    This isn't just a dream, Sanuu. It's a promise."
+                </p> -->
+                <button id="conclusion-button" class="propose-button py-3 px-8 rounded-full font-bold text-lg hover:text-white mt-12">The Final Chapter 💌</button>
+            </div>
+
+            <div id="conclusion-page" class="page flex-col items-center justify-center">
+                <h2 class="dancing-script text-5xl font-bold text-pink-600 mb-6">The Final Question...</h2>
+                <p class="text-lg md:text-xl text-pink-700 max-w-2xl mb-8 italic">
+                    Sanuu, my beautiful world is now open to you.
+                    My heart, my peace, and my future are all in your hands.
+                </p>
+                 <p class="text-lg md:text-xl text-pink-700 max-w-2xl mb-8 italic">
+        It's not just about <span class="font-semibold text-pink-900">my dreams</span> and 
+        <span class="font-semibold text-pink-900">my future with you</span>.  
+        I want to live <span class="font-semibold text-pink-900">your dreams</span>,  
+        walk with you towards your ambitions, and celebrate every success that is yours.  
+        Because your happiness, your goals, and your peace will always be as important as mine. 💖
+    </p>
+                <h3 class="dancing-script text-6xl md:text-7xl font-bold text-pink-700 animate-pulse my-8">
+                    Will you marry me? 💍
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const pages = ['intro-page', 'pre-video-page', 'the-reveal-page', 'memories-page', 'flashbacks-page', 'gifts-page', 'hammer-game-page', 'unwrapped-moment-page', 'future-page', 'conclusion-page'];
+        
+        // Buttons from the first few pages
+        const introYesButton = document.getElementById('yes-button');
+        const introNoButton = document.getElementById('no-button');
+        const preVideoButton = document.getElementById('pre-video-button');
+        const exploreButton = document.getElementById('explore-button');
+        const flashbacksButton = document.getElementById('flashbacks-button');
+        const giftsButton = document.getElementById('gifts-button');
+        const hammerGameButton = document.getElementById('hammer-game-button');
+        const unwrappedMomentButton = document.getElementById('unwrapped-moment-button');
+        const futureButton = document.getElementById('future-button');
+        const conclusionButton = document.getElementById('conclusion-button');
+
+        // Other elements
+        const messageBox = document.getElementById('message-box');
+        const videoOverlay = document.getElementById('video-overlay');
+        const gateVideo = document.getElementById('gate-video');
+        const gateAudio = document.getElementById('gate-audio');
+        const sadEmoji = document.getElementById('sad-emoji-container');
+
+        // Video and Unmute Buttons for each page
+        const videos = {
+            flashbacks: document.getElementById('flashbacks-video'),
+            gifts: document.getElementById('gifts-video'),
+            hammerGame: document.getElementById('hammer-game-video'),
+            unwrappedMoment: document.getElementById('unwrapped-moment-video')
+        };
+        
+        const unmuteButtons = {
+            flashbacks: document.getElementById('flashbacksUnmuteButton'),
+            gifts: document.getElementById('giftsUnmuteButton'),
+            hammerGame: document.getElementById('hammerGameUnmuteButton'),
+            unwrappedMoment: document.getElementById('unwrappedUnmuteButton')
+        };
+        
+        const unmuteButtonContainers = {
+            flashbacks: document.getElementById('flashbacksUnmuteButtonContainer'),
+            gifts: document.getElementById('giftsUnmuteButtonContainer'),
+            hammerGame: document.getElementById('hammerGameUnmuteButtonContainer'),
+            unwrappedMoment: document.getElementById('unwrappedUnmuteButtonContainer')
+        };
+
+        // Gifts page elements
+        const giftsYesButton = document.getElementById('gifts-yes-button');
+        const giftsNoButton = document.getElementById('gifts-no-button');
+        const questionContainer = document.getElementById('question-container');
+        const emojiContainer = document.getElementById('emoji-container');
+        const emojiDisplay = document.getElementById('emoji-display');
+
+        // This object will store the state for all videos
+        const videoStates = {
+            flashbacks: { currentTime: 0, isPaused: true },
+            gifts: { currentTime: 0, isPaused: true },
+            hammerGame: { currentTime: 0, isPaused: true },
+            unwrappedMoment: { currentTime: 0, isPaused: true }
+        };
+
+        /**
+         * Saves the current state of a video (playback position and paused status).
+         * @param {HTMLVideoElement} videoElement The video element to save.
+         * @param {object} stateObject The state object to save to.
+         */
+        const saveVideoState = (videoElement, stateObject) => {
+            if (videoElement) {
+                stateObject.currentTime = videoElement.currentTime;
+                stateObject.isPaused = videoElement.paused;
+                videoElement.pause(); // Pause the video when leaving the page
+            }
+        };
+
+        /**
+         * Restores a video's state from a saved state object.
+         * @param {HTMLVideoElement} videoElement The video element to restore.
+         * @param {object} stateObject The state object to restore from.
+         */
+        const restoreVideoState = (videoElement, stateObject) => {
+            if (videoElement) {
+                if (videoElement.readyState >= 2) {
+                    videoElement.currentTime = stateObject.currentTime;
+                    if (!stateObject.isPaused) {
+                        videoElement.play();
+                    } else {
+                        videoElement.pause();
+                    }
+                } else {
+                    videoElement.addEventListener('loadedmetadata', () => {
+                        videoElement.currentTime = stateObject.currentTime;
+                        if (!stateObject.isPaused) {
+                            videoElement.play();
+                        } else {
+                            videoElement.pause();
+                        }
+                    }, { once: true });
+                }
+            }
+        };
+        
+        // Unified function to show a page and hide all others
+        const showPage = (pageId) => {
+            // Save state of all videos before changing page
+            saveVideoState(videos.flashbacks, videoStates.flashbacks);
+            saveVideoState(videos.gifts, videoStates.gifts);
+            saveVideoState(videos.hammerGame, videoStates.hammerGame);
+            saveVideoState(videos.unwrappedMoment, videoStates.unwrappedMoment);
+
+            pages.forEach(id => {
+                const pageElement = document.getElementById(id);
+                if (pageElement) {
+                    pageElement.classList.remove('active');
+                    pageElement.classList.add('hidden');
+                }
+            });
+            const pageElement = document.getElementById(pageId);
+            if (pageElement) {
+                pageElement.classList.remove('hidden');
+                pageElement.classList.add('active');
+                
+                // Restore state of the video on the new page
+                const videoKey = Object.keys(videos).find(key => videos[key] && pageElement.contains(videos[key]));
+                if (videoKey) {
+                    restoreVideoState(videos[videoKey], videoStates[videoKey]);
+                }
+            }
+        };
+
+        const GOOGLE_APPS_SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+
+        const trackResponse = async (response) => {
+            try {
+                const data = {
+                    timestamp: new Date().toISOString(),
+                    response: response,
+                    user: 'Sanuu',
+                };
+                await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+                console.log('Response sent successfully.');
+            } catch (error) {
+                console.error('Error sending response:', error);
+            }
+        };
+
+        // Event listeners
+        if (introYesButton) {
+            introYesButton.addEventListener('click', () => {
+                messageBox.textContent = '';
+                showPage('pre-video-page');
+                trackResponse('Yes');
+            });
+        }
+
+        if (introNoButton) {
+            introNoButton.addEventListener('click', () => {
+                messageBox.textContent = "Bauraha feels sad 😔. Please give him a chance to show you.";
+                sadEmoji.style.display = 'block';
+                setTimeout(() => {
+                    sadEmoji.style.display = 'none';
+                }, 3000);
+                trackResponse('No');
+            });
+        }
+
+        if (preVideoButton) {
+            preVideoButton.addEventListener('click', () => {
+                const preVideoPage = document.getElementById('pre-video-page');
+                preVideoPage.classList.add('fading-out');
+
+                setTimeout(() => {
+                    preVideoPage.classList.remove('active');
+                    videoOverlay.classList.add('active');
+                    
+                    const videoPromise = gateVideo.play();
+                    const audioPromise = gateAudio.play();
+                    
+                    if (videoPromise !== undefined) {
+                        videoPromise.catch(error => {
+                            gateVideo.muted = true;
+                            gateAudio.muted = true;
+                            gateVideo.play();
+                            gateAudio.play();
+                        });
+                    }
+                    
+                    preVideoPage.classList.remove('fading-out');
+                }, 700);
+            });
+        }
+
+        if (gateVideo) {
+            gateVideo.addEventListener('ended', () => {
+                videoOverlay.classList.remove('active');
+                gateAudio.pause();
+                gateAudio.currentTime = 0;
+                showPage('the-reveal-page');
+            });
+        }
+
+        if (exploreButton) {
+            exploreButton.addEventListener('click', () => showPage('memories-page'));
+        }
+
+        if (flashbacksButton) {
+            flashbacksButton.addEventListener('click', () => showPage('flashbacks-page'));
+        }
+
+        if (giftsButton) {
+            giftsButton.addEventListener('click', () => showPage('gifts-page'));
+        }
+
+        if (hammerGameButton) {
+            hammerGameButton.addEventListener('click', () => showPage('hammer-game-page'));
+        }
+        
+        if (unwrappedMomentButton) {
+            unwrappedMomentButton.addEventListener('click', () => showPage('unwrapped-moment-page'));
+        }
+
+        if (futureButton) {
+            futureButton.addEventListener('click', () => showPage('future-page'));
+        }
+
+        if (conclusionButton) {
+            conclusionButton.addEventListener('click', () => showPage('conclusion-page'));
+        }
+
+        // Unmute button logic for all video pages
+        for (const key in unmuteButtons) {
+            if (unmuteButtons[key]) {
+                unmuteButtons[key].addEventListener('click', () => {
+                    const video = videos[key];
+                    const container = unmuteButtonContainers[key];
+                    if (video) {
+                        video.muted = false;
+                        video.play();
+                    }
+                    if (container) {
+                        container.style.display = 'none';
+                    }
+                });
+            }
+        }
+
+        // Gifts page button logic
+        if (giftsYesButton) {
+            giftsYesButton.addEventListener('click', () => {
+                emojiDisplay.textContent = '😊';
+                questionContainer.classList.add('hidden');
+                emojiContainer.classList.remove('hidden');
+            });
+        }
+
+        if (giftsNoButton) {
+            giftsNoButton.addEventListener('click', () => {
+                emojiDisplay.textContent = '😢';
+                questionContainer.classList.add('hidden');
+                emojiContainer.classList.remove('hidden');
+            });
+        }
+    </script>
+</body>
+</html>
